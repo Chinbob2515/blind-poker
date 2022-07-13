@@ -91,7 +91,7 @@ let Table = function (num_players, deck, init_money, big_blind, small_blind) {
 	deck = shuffled(deck)
 	for (var i = 0; i != num_players; i++) {
 		let hand = new Hand(deck.pop(), deck.pop())
-		let player = new Player(i, "player "+i, i == 0, deck)
+		let player = new Player(i, "player "+i, i == 0, hand)
 		player.set_money(init_money);
 		players.push(player);
 	}
@@ -107,18 +107,34 @@ let Table = function (num_players, deck, init_money, big_blind, small_blind) {
 		acc = "<h1> Players </h1>"
 		for (var i = 0; i != players.length; i++) {
 			let player = players[i]
+			let hand_template = `
+<ul>
+	<li>
+		${player.hand.card1.full_name}
+	</li>
+	<li>
+		${player.hand.card2.full_name}
+	</li>
+</ul>
+`
 			let player_template = `
 <div>
 	<h3> Player: ${player.name} </h3> 
-	${i == this.dealer ? "Dealer" : ""}
+	${i == this.dealer ? "Dealer <br/>" : ""}
 	Money: ${player.money}
+	${i == 0 ? hand_template : ""}
 </div>
 `
 			acc += player_template
 		}
+		let table_acc = "<ul>"
+		for (card of this.table) {
+			table_acc += `<li> ${card.full_name} </li>`
+		}
+		table_acc += "</ul>"
 		let table_template = `
 <div>
-	<h1> Deck </h1>
+	<h1> Table </h1>
 </div>
 `
 		acc += table_template;
