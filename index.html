@@ -1,0 +1,122 @@
+<html>
+
+ <head>
+  <script>
+
+function shuffled (unshuffled) {
+	return unshuffled
+  .map(value => ({ value, sort: Math.random() }))
+  .sort((a, b) => a.sort - b.sort)
+  .map(({ value }) => value)
+}
+
+let Type = {
+ Diamonds: "Diamonds" 
+ ,Spades: "Spades"
+ ,Hearts: "Hearts"
+ ,Clubs: "Clubs"
+}
+Type["all"] = [Type.Diamonds, Type.Spades, Type.Hearts, Type.Clubs]
+
+let Colour = {
+ Black: "Black"
+,Red: "Red"
+}
+Colour["all"] = [Colour.Black, Colour.Red]
+
+function colour_of_type (type) {
+	switch (type) {
+		case Type.Diamonds:
+		case Type.Hearts:
+			return Colour.Red;
+		case Type.Spades:
+		case Type.Clubs:
+			return Colour.Black;
+		default:
+			console.log("error: "+type+"!");
+	}
+}
+
+function name_of_number (number) {
+	switch (number) {
+	case 1: return "Ace";
+	case 2: return "Two";
+	case 3: return "Three";
+	case 4: return "Four";
+	case 5: return "Five";
+	case 6: return "Six";
+	case 7: return "Seven";
+	case 8: return "Eight";
+	case 9: return "Nine";
+	case 10: return "Ten";
+	case 11: return "Jack";
+	case 12: return "Queen";
+	case 13: return "King";
+	}
+}
+
+let Card = function (type, number) {
+	this.type = type;
+	this.colour = colour_of_type(type);
+	this.number = number;
+	this.number_name = name_of_number(number);
+	this.full_name = this.number_name + " of " + this.type
+}
+
+let Player = function (id, name, is_human, hand) {
+	this.id = id
+	this.name = name
+	this.is_human = is_human
+	this.strategy = (i => undefined)
+	this.hand = hand
+}
+
+let Hand = function (card1, card2) {
+	this.card1 = card1
+	this.card2 = card2
+}
+
+let Table = function (num_players, deck, init_money, big_blind, small_blind) {
+	players = []
+	deck = shuffled(deck)
+	for (var i = 0; i != num_players; i++) {
+		let hand = new Hand(deck.pop(), deck.pop())
+		players.push(new Player(i, "player "+i, i == 0, deck));
+	}
+	this.num_players = num_players
+	this.players = players
+	this.deck = deck
+	this.dealer = 0
+	this.big_blind = big_blind
+	this.small_blind = small_blind
+	this.money = init_money
+	this.html = function () {
+		acc = ""
+		let player_template = `
+<div>
+	<h1> Player: ${}
+</div>
+`
+	}
+}
+
+function init_deck () {
+	let acc = [];
+	for (const type of Type.all) {
+		for (var i = 1; i <= 13; i++) acc.push(new Card(type, i));
+	}
+	return acc;
+}
+
+let table = new Table(4, init_deck(), 10, 5);
+
+
+  </script>
+ </head>
+
+ <body>
+	<div id=container>
+	</div>
+ </body>
+
+</html>
