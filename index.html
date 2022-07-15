@@ -86,6 +86,13 @@ let Hand = function (card1, card2) {
 	this.card2 = card2
 }
 
+let State = {
+	Post_draw : "Post draw",
+	Post_flop : "Post flop",
+	Post_four : "Post four",
+	Final_round : "Final"
+}
+
 let Table = function (num_players, deck, init_money, big_blind, small_blind) {
 	players = []
 	deck = shuffled(deck)
@@ -99,10 +106,57 @@ let Table = function (num_players, deck, init_money, big_blind, small_blind) {
 	this.players = players
 	this.deck = deck
 	this.dealer = 0
+	this.pot = 0
 	this.big_blind = big_blind
 	this.small_blind = small_blind
 	this.money = init_money
 	this.table = []
+	this.state = {
+		round : State.Post_draw,
+		player_to_bet : -1,
+		last_to_bet : -1
+	}
+	this.next_player_to = function(num){
+		return (num+1)%this.num_players
+	}
+	this.prev_player_to = function(num){
+		return (num-1)%this.num_players
+	}
+	this.next_player = function(){
+		return this.next_player_to(this.state.player_to_bet)
+	}
+	this.prev_player = function(){
+		return this.prev_player_to(this.state.player_to_bet)
+	}
+	this.bet_money = function(amount) {
+		this.players[this.state.player_to_bet].sub_money(amount)
+		this.pot += amount
+	}
+	// TODO: deal with player elimination
+	this.progress_round = function() {
+		if(this.state.player_to_bet == -1) {
+			this.state.player_to_bet = this.next_player_to(this.dealer)
+			this.bet_money(this.small_blind)
+			this.state.player_to_bet = this.next_player()
+			this.bet_money(this.big_blind)
+		} else {
+			action = this.players[this.state.player_to_bet].strategy()
+			switch(action){
+			default:
+				console.log("action: "+action)
+			}
+		}
+	}
+	// TODO: make this return html
+	this.next_button = function() {
+		if(this.state.player_to_bet == -1) {
+			return "<button onclick=progress_round()>Place blinds</button>"
+		} else if (this.state.player_to_bet == 0) {
+			return "Betting object"
+		} else {
+			return `<button onclick=progress_round()>Next player's (${this.players[this.state.player_to_bet].name}) turn </button>`
+		}
+	}
 	this.html = function () {
 		acc = "<h1> Players </h1>"
 		for (var i = 0; i != players.length; i++) {
@@ -134,10 +188,14 @@ let Table = function (num_players, deck, init_money, big_blind, small_blind) {
 		table_acc += "</ul>"
 		let table_template = `
 <div>
-	<h1> Table </h1>
+	<h1> Table </h1> <br/>
+	Current player: ${this.state.player_to_bet} <br/>
+	Pot: ${this.pot} <br/>
+	${table_acc}
 </div>
 `
 		acc += table_template;
+		acc += this.next_button()
 		return acc
 	}
 }
@@ -150,11 +208,16 @@ function init_deck () {
 	return acc;
 }
 
-let table = new Table(4, init_deck(), 10, 5);
+let table = new Table(4, init_deck(), 400, 10, 5);
 
 let draw_table = function() {
 	let container_element = document.getElementById("container")
 	container_element.innerHTML = table.html()
+}
+
+let progress_round = function() {
+	table.progress_round()
+	draw_table()
 }
 
   </script>
@@ -162,6 +225,7 @@ let draw_table = function() {
 
  <body>
 	<div id=container>
+		<button onclick=draw_table()>Start game</button>
 	</div>
  </body>
 
